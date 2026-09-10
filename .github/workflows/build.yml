@@ -40,8 +40,21 @@ jobs:
             ./build.ps1 -Configuration Release
           }
 
+      - name: Locate built executable
+        shell: pwsh
+        run: |
+          $exe = 'WandEnhancer\bin\Release\WandEnhancer.exe'
+          Write-Host "Searching for $exe relative to: $(Get-Location)"
+          $found = Get-ChildItem -Recurse -Filter 'WandEnhancer.exe' -ErrorAction SilentlyContinue |
+                   Select-Object FullName, @{n='KB';e={[math]::Round($_.Length/1KB,1)}}
+          if ($found) {
+              $found | Format-Table -AutoSize
+          } else {
+              Write-Error 'WandEnhancer.exe was not found anywhere in the workspace.'
+          }
+
       - name: Upload unsigned executable
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: WandEnhancer-unsigned
           path: WandEnhancer/bin/Release/WandEnhancer.exe
